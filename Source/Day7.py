@@ -10,6 +10,14 @@ class Directory:
     def __init__(self, newDirName, newPrevDir):
         self.dirName = newDirName
         self.prevDir = newPrevDir
+        self.dirs = []
+        self.files = {}
+
+    def copy(self):
+        newDir = Directory(self.dirName, self.prevDir)
+        newDir.dirs = self.dirs.copy()
+        newDir.files = self.files.copy()
+        return newDir
 
     def GetDirs(self):
         return self.dirs
@@ -30,11 +38,13 @@ class Directory:
         dirSize = 0
         for key, value in self.files.items():
             dirSize += int(value)
+        return dirSize
 
     def GetDirSizeRecursive(self, dirDict : dict):
         currentDirSize = self.GetDirSize()
         for dir in self.dirs:
             currentDirSize += dirDict[dir].GetDirSizeRecursive(dirDict)
+        return currentDirSize
 
     dirName = ''
     prevDir = ''
@@ -67,34 +77,39 @@ def SolveDayPartA(filepath):
                 if currentDirName == '':
                     currentDirName = lineData[2]
                     if currentDirName in dirDict.keys():
-                        currentDir = dirDict[currentDirName]
+                        currentDir = dirDict[currentDirName].copy()
                     else:
                         currentDir = Directory(currentDirName, '')
                 elif lineData[2] == '..':
                     newDirName = currentDir.GetPrevDir()
-                    currentDir = dirDict[newDirName]
+                    if newDirName == '':
+                        continue
+                    currentDir = dirDict[newDirName].copy()
                     currentDirName = newDirName
                 else:
                     prevDir = currentDirName
                     currentDirName = lineData[2]
                     if currentDirName in dirDict.keys():
-                        currentDir = dirDict[currentDirName]
+                        currentDir = dirDict[currentDirName].copy()
                     else:
-                        currentDir = Directory(currentDirName, prevDir)
-                dirDict[currentDirName] = currentDir
+                        newDir = Directory(currentDirName, prevDir)
+                        currentDir = newDir.copy()
+                dirDict[currentDirName] = currentDir.copy()
 
             elif lineData[1] == 'ls':
                 #currentMode = LineMode.ListDir
                 continue
         elif lineData[0] == 'dir':
             currentDir.AddDir(lineData[1])
+            dirDict[currentDirName] = currentDir.copy()
         else:
             currentDir.AddFile(lineData[1], lineData[0])
+            dirDict[currentDirName] = currentDir.copy()
 
     sumOfSizes = 0
     for key, value in dirDict.items():
         currentSize = value.GetDirSizeRecursive(dirDict)
-        if currentSize < 10000:
+        if currentSize < 100000:
             sumOfSizes += currentSize
     return sumOfSizes
 
