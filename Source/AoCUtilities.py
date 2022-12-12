@@ -12,6 +12,9 @@ def split(word):
 def splitInt(word):
     return [int(char) for char in word]
 
+def splitAscii(word):
+    return [ord(char) for char in word]
+
 def IsValidIndex( listToCheck:list, index):
     if 0 <= index < len(listToCheck):
         return True
@@ -48,6 +51,18 @@ def Make2DDataArray(fileData):
 
     return dataArray
 
+def Make2DStrArray(fileData):
+    dataArray = []
+    for fileLine in fileData:
+        dataArray.append(split(fileLine.strip()))
+    return dataArray
+
+def Make2DAsciiArray(fileData):
+    dataArray = []
+    for fileLine in fileData:
+        dataArray.append(splitAscii(fileLine.strip()))
+    return dataArray
+
 def AddCountToDict(dict:dict, key, count):
     if key in dict.keys():
         dict[key] += count
@@ -60,10 +75,43 @@ def MakeListInitialVal(length, initialVal):
 
 def Make2DList(rowLen, colLen, initialVal):
     list = []
-    for colIndex in range(0, colLen):
-        list.append(MakeListInitialVal(rowLen, initialVal))
+    for rowIndex in range(0, rowLen):
+        list.append(MakeListInitialVal(colLen, initialVal))
 
     return list
+
+def FindValIn2DList(list, val):
+    for rowIndex in range(len(list)):
+        for colIndex in range(len(list[rowIndex])):
+            valToCheck = list[rowIndex][colIndex]
+            if val == valToCheck:
+                return (colIndex,rowIndex)
+
+    return None
+
+def FindAllIn2DList(list : list, val):
+    currentList = []
+
+    for rowIndex in range(len(list)):
+        for colIndex in range(len(list[rowIndex])):
+            valToCheck = list[rowIndex][colIndex]
+            if val == valToCheck:
+                currentList.append((colIndex,rowIndex))
+
+    return currentList
+
+def AddXY(a,b):
+    c = (a[0] + b[0], a[1] + b[1])
+    return c
+
+def MulXY(a,b):
+    c = (a[0] * b[0], a[1] * b[1])
+    return c
+
+def Print2DStrListSeparator(list, separator : str):
+    for line in list:
+        lineStr = ListToStringSeparator(line, separator)
+        print(lineStr)
 
 def Print2DStrList(list):
     for line in list:
@@ -75,13 +123,8 @@ def Print2DStrListReversed(list):
         lineStr = ListToString(line)
         print(lineStr)
 
-def AddXY(a,b):
-    c = (a[0] + b[0], a[1] + b[1])
-    return c
-
-def MulXY(a,b):
-    c = (a[0] * b[0], a[1] * b[1])
-    return c
+def ListToStringSeparator(list:list, separator : str):
+    return separator.join(map(str,list))
 
 def ListToString(list:list):
     return ''.join(map(str,list))
