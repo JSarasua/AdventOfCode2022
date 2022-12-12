@@ -65,6 +65,16 @@ def Make2DList(rowLen, colLen, initialVal):
 
     return list
 
+def Print2DStrList(list):
+    for line in list:
+        lineStr = ListToString(line)
+        print(lineStr)
+
+def Print2DStrListReversed(list):
+    for line in reversed(list):
+        lineStr = ListToString(line)
+        print(lineStr)
+
 def AddXY(a,b):
     c = (a[0] + b[0], a[1] + b[1])
     return c
