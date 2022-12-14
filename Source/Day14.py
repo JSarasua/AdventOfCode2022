@@ -3,7 +3,7 @@ import ast
 import functools
 from collections import Counter
 
-def TryAddSand(list : list) -> bool:
+def TryAddSand(list : set) -> bool:
     currentSpot = (500,0)
     lastSpot = None
     maxIter = 500
@@ -27,11 +27,11 @@ def TryAddSand(list : list) -> bool:
 
 
     if currentSpot not in list:
-        list.append(currentSpot)
+        list.add(currentSpot)
         return True
     return False
 
-def TryAddSand2(list: list, highestYPoint: int) -> bool:
+def TryAddSand2(list: set, highestYPoint: int) -> bool:
     currentSpot = (500, 0)
     lastSpot = None
 
@@ -60,17 +60,17 @@ def TryAddSand2(list: list, highestYPoint: int) -> bool:
         return False
 
     if currentSpot not in list:
-        list.append(currentSpot)
+        list.add(currentSpot)
         return True
     return True
 
-def AddLinesToList(list : list, pointsInLine : list):
+def AddLinesToList(list : set, pointsInLine : list):
     firstPoint = None
     secondPoint = None
 
     for point in pointsInLine:
         if point not in list:
-            list.append(point)
+            list.add(point)
 
         if firstPoint == None:
             firstPoint = point
@@ -90,22 +90,22 @@ def AddLinesToList(list : list, pointsInLine : list):
                 for x in range(sX,fX):
                     newPoint = (x,fY)
                     if newPoint not in list:
-                        list.append(newPoint)
+                        list.add(newPoint)
             elif xDiff < 0:
                 for x in range(fX,sX):
                     newPoint = (x,fY)
                     if newPoint not in list:
-                        list.append(newPoint)
+                        list.add(newPoint)
             elif yDiff > 0:
                 for y in range(sY,fY):
                     newPoint = (fX,y)
                     if newPoint not in list:
-                        list.append(newPoint)
+                        list.add(newPoint)
             elif yDiff < 0:
                 for y in range(fY, sY):
                     newPoint = (fX, y)
                     if newPoint not in list:
-                        list.append(newPoint)
+                        list.add(newPoint)
             firstPoint = secondPoint
             secondPoint = None
 
@@ -113,7 +113,7 @@ def SolveDayPartA(filepath):
     with open(filepath, "r") as openedFile:
         fileData = openedFile.readlines()
 
-    walls = []
+    walls = set()
     for fileLine in fileData:
         vertices = [vertex for vertex in fileLine.strip().split(' -> ')]
         points = []
@@ -139,7 +139,7 @@ def SolveDayPartB(filepath):
     with open(filepath, "r") as openedFile:
         fileData = openedFile.readlines()
 
-    walls = []
+    walls = set()
     for fileLine in fileData:
         vertices = [vertex for vertex in fileLine.strip().split(' -> ')]
         points = []
