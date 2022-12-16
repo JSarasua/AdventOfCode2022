@@ -3,6 +3,61 @@ import ast
 import functools
 from collections import Counter
 
+
+class IntLine:
+    def __init__(self, startPos, endPos):
+        self.startPos = startPos
+        self.endPos = endPos
+        self.m = (endPos[1] - startPos[1])/(endPos[0] - startPos[0])
+
+        #y = mx + b
+        x = startPos[0]
+        y = startPos[1]
+        self.b = y - self.m * x
+
+    def IsParallel(self, line : 'IntLine') -> bool:
+        if self.m == line.m:
+            return True
+
+    def GetParallelDist(self, line : 'IntLine') -> int:
+        return GetDistance(self.b, line.b)
+
+    def GetHigherBParallelLine(self, line : 'IntLine') -> 'IntLine':
+        if self.b > line.b:
+            return self
+        else:
+            return line
+
+    def GetIntersection(self, line: 'IntLine') -> tuple: #in the future changing away from tuples would be good
+        if self.IsParallel(line):
+            return None
+        myB = self.b
+        theirB = line.b
+
+        #y = x + 1
+        #y = -x + 5
+        # x = y - 1
+        # x = 5 - y
+        # y - 1 = 5 - y
+        # 2y = 6
+        # y = 3
+
+        y = (myB + theirB)/2
+        x = (y-myB)/self.m
+
+        return(x,y)
+
+def GetParallelLinesWithDist2( parallelLines : list['IntLine']):
+    dist2Lines = []
+    for line in parallelLines:
+        for otherLine in parallelLines:
+            if line == otherLine:
+                continue
+            dist = line.GetParallelDist(otherLine)
+            if dist == 2:
+                dist2Lines.append((line, otherLine))
+    return dist2Lines
+
 def ExpandRange(minPos, maxPos, newPos):
     if minPos == None:
         minPos = newPos
@@ -64,69 +119,16 @@ def AddLinesToLists(bLTotR : list, tLTobR : list, sensorPos : tuple, beaconPos :
 
     return
 
-def FindLinesWithDist2(parallelLines : list) -> set:
-    dist2Lines = set()
-
-    for line in parallelLines:
-        point1 = line[0]
-        yMinusX = point1[1] - point1[0]
-        for otherLine in parallelLines:
-            point2 = otherLine[0]
-            otherYMinusX = point2[1] - point2[0]
-            dist = GetDistance(yMinusX, otherYMinusX)
-            if dist == 2:
-                dist2Lines.add((line,otherLine))
-    return dist2Lines
-
-def FindNegLinesWithDist2(parallelLines : list) -> set:
-    dist2Lines = set()
-
-    for line in parallelLines:
-        point1 = line[0]
-        yPlusX = point1[1] + point1[0]
-        for otherLine in parallelLines:
-            point2 = otherLine[0]
-            otherYPlusX = point2[1] + point2[0]
-            dist = GetDistance(yPlusX, otherYPlusX)
-            if dist == 2:
-                dist2Lines.add((line,otherLine))
-    return dist2Lines
-
-def GetIntersectionBetweenLines( line1 : tuple, line2 : tuple):
-    #y=x+b
-    point1 = line1[0]
-    b = point1[1] - point1[0]
-
-    point2 = line2[0]
-    negB = point2[1] + point2[0]
-
-    y = (negB - b) / 2
-    x = y - b
-
-    return(x,y)
-
-
-def GetPossibleCenterPoint(posLines : tuple, negLines : tuple):
-    highestPosB = -9999999999
-    highestNegB = -9999999999
-
-    for posLine in posLines:
-        point1 = posLine[0]
-        b = point1[1] - point1[0]
-        if b > highestPosB:
-            highestPosB = b
-
-    for negLine in negLines:
-        point1 = negLine[0]
-        b = point1[1] + point1[0]
-        if b > highestNegB:
-            highestNegB = b
-
-    y = (highestNegB - highestPosB) / 2
-    x = y - highestPosB
-    return (x, y-1)
-
-
+def GetPossibleCenterPoints(posLinePairs : list[tuple['IntLine','IntLine']], negLinePairs : list[tuple['IntLine','IntLine']]) -> set:
+    centerPoints = set()
+    for posLinePair in posLinePairs:
+        higherPosLine = posLinePair[0].GetHigherBParallelLine(posLinePair[1])
+        for negLinePair in negLinePairs:
+            higherNegLine = negLinePair[0].GetHigherBParallelLine(negLinePair[1])
+            intPoint = higherPosLine.GetIntersection(higherNegLine)
+            centerPoint = (intPoint[0],intPoint[1]-1)
+            centerPoints.add(centerPoint)
+    return centerPoints
 
 def SolveDayPartA(filepath):
     with open(filepath, "r") as openedFile:
@@ -162,15 +164,22 @@ def SolveDayPartB(filepath):
     with open(filepath, "r") as openedFile:
         fileData = openedFile.readlines()
 
+    # Ok I'm making a big assumption that the point isn't on the boundary. If so, then come up with another solution!
+    # Convert all of the sensor/beacon pairs into two lists of lines. The positive and negative slope lines
+    # For each line, look for a line where the gap is 2 between
+    # Please for the love of all that is holy be there two of these.
+    # Get the intersection point between these lines
+    # Ideally I can grab the higher b value of the positive and negative lines and then find their intersection
+    # The intersection should by right above the point we're looking for
+    #
+    # Edge cases to check for if this doesn't work:
+    # * There's an intersection between lines right next to the border. The point we're looking for will then be on the border
+    # * Theoretically the diamonds created could have all of their points surround the point we're looking for. I don't want to deal with this
+    # * Ok and this could easily happen. Currently I'm treating my lines as if they are infinite. THEY ARE NOT. I JUST DON'T WANT TO DEAL WITH IT
+
     sensors = []
     beacons = []
 
-    # Ok I'm making a big assumption that the point isn't on the boundary. If so, then come up with another solution!
-    # Convert all of the sensor/beacon pairs into two lists of lines. The bottom left to top right and top right to bottom left
-    # For each line, look for a line where the gap is 1 between
-    # Please for the love of all that is holy be there two of these.
-    # Get the intersection point between these points
-    # Look at the data and hope you got your answer
     blTotR = []
     tLTobR = []
 
@@ -186,14 +195,20 @@ def SolveDayPartB(filepath):
         AddLinesToLists(blTotR, tLTobR, sensorPos, beaconPos)
     # Looking for two sets of parallel lines
 
-    blLinesWithDis2 = FindLinesWithDist2(blTotR)
-    tLLinesWithDis2 = FindNegLinesWithDist2(tLTobR)
+    posLines = []
+    negLines = []
+    for posLine in blTotR:
+        newLine = IntLine(posLine[0], posLine[1])
+        posLines.append(newLine)
 
-    intersectionPoints = set()
-    for blLine in blLinesWithDis2:
-        for tlLine in tLLinesWithDis2:
-            point = GetPossibleCenterPoint(blLine, tlLine)
-            intersectionPoints.add(point)
+    for negLine in tLTobR:
+        newLine = IntLine(negLine[0], negLine[1])
+        negLines.append(newLine)
+
+    dist2PosLines = GetParallelLinesWithDist2(posLines)
+    dist2NegLines = GetParallelLinesWithDist2(negLines)
+
+    intersectionPoints = GetPossibleCenterPoints(dist2PosLines, dist2NegLines)
 
     for intersectionPoint in intersectionPoints:
         print(intersectionPoint)
@@ -203,8 +218,6 @@ def SolveDayPartB(filepath):
         y = point[1]
         xy = x + y
         print(xy)
-
-
 
     return 0
 
