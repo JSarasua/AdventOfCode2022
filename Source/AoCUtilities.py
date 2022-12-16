@@ -128,3 +128,11 @@ def ListToStringSeparator(list:list, separator : str):
 
 def ListToString(list:list):
     return ''.join(map(str,list))
+
+def GetManhattanDist(pointA : tuple, pointB : tuple) -> int:
+    xDist = abs(pointB[0] - pointA[0])
+    yDist = abs(pointB[1] - pointA[1])
+    return xDist + yDist
+
+def GetDistance(x,y):
+    return abs(y-x)
