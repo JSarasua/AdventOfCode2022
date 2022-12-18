@@ -108,6 +108,10 @@ def MulXY(a,b):
     c = (a[0] * b[0], a[1] * b[1])
     return c
 
+def AddXYZ(a,b):
+    c = (a[0] + b[0], a[1] + b[1], a[2] + b[2])
+    return c
+
 def Print2DStrListSeparator(list, separator : str):
     for line in list:
         lineStr = ListToStringSeparator(line, separator)
