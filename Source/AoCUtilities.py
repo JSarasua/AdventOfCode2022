@@ -12,6 +12,10 @@ def split(word):
 def splitInt(word):
     return [int(char) for char in word]
 
+def splitIntWithStr(word, splitStr):
+    splitWord = word.split(splitStr)
+    return splitInt(splitWord)
+
 def splitAscii(word):
     return [ord(char) for char in word]
 
